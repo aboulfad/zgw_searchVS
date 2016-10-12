@@ -1,0 +1,3 @@
+C# implementation of zgw_search
+
+This script replaces and improves the zgw_search.exe provided in the EDIABAS distribution. It broadcasts the "magic" packet to all available network interfaces (no loopback/ipv6) to discover the ZGW. The EDIABAS zgw_search is hard coded to broadcast the packet to 169.254.255.255 and hence does not work on other subnets.
