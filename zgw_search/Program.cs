@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Net.NetworkInformation;
+using System.Diagnostics;
 
 namespace zgw_search
 {
@@ -57,7 +58,8 @@ namespace zgw_search
                     if (!IPAddress.IsLoopback(ipAddr.Address) && ipAddr.Address.AddressFamily == AddressFamily.InterNetwork)
                     {
                         IPAddress broadcast =  GetBroadCastIP( ipAddr.Address,  ipAddr.IPv4Mask);
-                        Console.WriteLine(ipAddr.IPv4Mask == null ? "No subnet defined" : "IPv4Address: " + ipAddr.Address + "\nIpv4 Mask: " + ipAddr.IPv4Mask.ToString() + "\nBroadcast: " + broadcast);
+                        Trace.TraceInformation(ipAddr.IPv4Mask == null ? "No subnet defined" : "\nipAddr: " + ipAddr.Address + "\nNetmask: " + ipAddr.IPv4Mask.ToString() + "\nBroadcast: " + broadcast);
+                        //Console.WriteLine(ipAddr.IPv4Mask == null ? "No subnet defined" : "ipAddr: " + ipAddr.Address + "\nNetmask: " + ipAddr.IPv4Mask.ToString() + "\nBroadcast: " + broadcast);
                         IPEndPoint ep = new IPEndPoint(broadcast, UDP_DIAG_PORT);
                         sock.SendTo(helloZGW, ep);
                     }
@@ -74,6 +76,8 @@ namespace zgw_search
             //Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new Form1());
+            Trace.Listeners.Add(new TextWriterTraceListener("zgw_search.log", "myListener"));
+            
             Socket sock = getSocket();
             pingZGW(sock);
 
@@ -81,22 +85,13 @@ namespace zgw_search
             IPEndPoint sender = new IPEndPoint(IPAddress.Any, UDP_TST_PORT);
             EndPoint ipRemote = (EndPoint)(sender);
             Console.WriteLine("Waiting to receive datagrams from client...");
-            /*sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, 3000);
-            try
-            {
-                sock.ReceiveTimeout = 3000;
-            }
-            catch (SocketException ex)
-            {
-                Console.WriteLine("Socket timeout!", ex.ToString());
-            }
-            */
-            int len = sock.ReceiveFrom(data, data.Length, SocketFlags.None, ref ipRemote);
-            // tstdATA = "   2 DIAGADR10BMWMAC001000024C15BMWVINWBS3R9C54DEADBEEF"
-            string ZGW_reply = string.Join(string.Empty, Encoding.ASCII.GetString(data, 0, len).Skip(6));
-            Console.WriteLine("Response is:{0}", ZGW_reply);
-            string pattern = @"(.*)BMWMAC(.*)BMWVIN(.*)";
 
+            int len = sock.ReceiveFrom(data, data.Length, SocketFlags.None, ref ipRemote);
+             // tstdATA = "   2 DIAGADR10BMWMAC001000024C15BMWVINWBS3R9C54DEADBEEF"
+            string ZGW_reply = string.Join(string.Empty, Encoding.ASCII.GetString(data, 0, len).Skip(6));
+            Trace.TraceInformation("Response is:{0}", ZGW_reply);
+
+            string pattern = @"(.*)BMWMAC(.*)BMWVIN(.*)";
             foreach (Match match in Regex.Matches(ZGW_reply, pattern, RegexOptions.IgnoreCase))
             {
                 string diagAddr = match.Groups[1].Value;
@@ -108,7 +103,8 @@ namespace zgw_search
             } 
             //MessageBox.Show("Message Received" + data, "My Application",
             //MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
-            sock.Close();         
+            sock.Close();
+            Trace.Flush();
         }
     }
 }
