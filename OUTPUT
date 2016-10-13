@@ -1,0 +1,14 @@
+Sample output for two NICs.
+
+C:\src\zgw_search.exe
+IPv4Address: 10.10.1.108
+Ipv4 Mask: 255.255.0.0
+Broadcast: 10.10.255.255
+IPv4Address: 10.10.1.113
+Ipv4 Mask: 255.255.0.0
+Broadcast: 10.10.255.255
+Waiting to receive datagrams from client...
+Response is:DIAGADR10BMWMAC001000024C15BMWVINWBS3R9C54DEADBEEF
+DiagAddr: DIAGADR10
+ ZgwMAC: 001000024C15
+ ZgwVIN: WBS3R9C54DEADBEEF
