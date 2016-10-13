@@ -21,10 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -87,16 +84,11 @@ namespace zgw_search
                     }
                 }
             }
-            //MessageBox.Show("Message sent", "My Application",
-            //MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
         }
 
         [STAThread]
          static void Main()
         {
-            /*Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1()); */
             Trace.Listeners.Add(new ConsoleTraceListener());
             //Trace.Listeners.Add(new TextWriterTraceListener(new System.IO.StreamWriter(@".\zgw_search.log", false)));
             
