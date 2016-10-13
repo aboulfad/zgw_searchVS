@@ -79,7 +79,7 @@ namespace zgw_search
 
             byte[] data = new byte[256];
             IPEndPoint sender = new IPEndPoint(IPAddress.Any, UDP_TST_PORT);
-            EndPoint tmpRemote = (EndPoint)(sender);
+            EndPoint ipRemote = (EndPoint)(sender);
             Console.WriteLine("Waiting to receive datagrams from client...");
             /*sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, 3000);
             try
@@ -91,17 +91,21 @@ namespace zgw_search
                 Console.WriteLine("Socket timeout!", ex.ToString());
             }
             */
-            int len = sock.ReceiveFrom(data, data.Length, SocketFlags.None, ref tmpRemote);
+            int len = sock.ReceiveFrom(data, data.Length, SocketFlags.None, ref ipRemote);
             // tstdATA = "   2 DIAGADR10BMWMAC001000024C15BMWVINWBS3R9C54DEADBEEF"
             string ZGW_reply = string.Join(string.Empty, Encoding.ASCII.GetString(data, 0, len).Skip(6));
             Console.WriteLine("Response is:{0}", ZGW_reply);
-
             string pattern = @"(.*)BMWMAC(.*)BMWVIN(.*)";
+
             foreach (Match match in Regex.Matches(ZGW_reply, pattern, RegexOptions.IgnoreCase))
             {
-                Console.WriteLine("DiagAddr: {0}\n ZgwMAC: {1}\n ZgwVIN: {2}", match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value);
-            } 
+                string diagAddr = match.Groups[1].Value;
+                string ZgwIP = ((IPEndPoint)(ipRemote)).Address.ToString();
+                string ZgwMAC = match.Groups[2].Value;
+                string ZgwVIN = match.Groups[3].Value;
 
+                Console.WriteLine("DiagAddr: {0}\nZgw VIN: {1}\nZgwMAC: {2}\nZgwVIN: {3}",  diagAddr, ZgwIP , ZgwMAC, ZgwVIN);
+            } 
             //MessageBox.Show("Message Received" + data, "My Application",
             //MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
             sock.Close();         
