@@ -1,6 +1,6 @@
 ﻿/* MIT License
 
-Copyright(c) 2016 aboulfad @BF, BP, CTUK
+Copyright(c) 2016 aboulfad@BF, BP, CTUK
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,21 +35,7 @@ namespace zgw_search
     {
         private const int UDP_DIAG_PORT = 6811;
         private const int UDP_TST_PORT = 54321;
-
         static byte[] helloZGW = new byte[] { 0,0,0,0,0,0x11 };
-
-        static IPAddress GetBroadCastIP(IPAddress host, IPAddress mask)
-        {
-            byte[] broadcastIPBytes = new byte[4];
-            byte[] hostBytes = host.GetAddressBytes();
-            byte[] maskBytes = mask.GetAddressBytes();
-            for (int i = 0; i < 4; i++)
-            {
-                broadcastIPBytes[i] = (byte)(hostBytes[i] | (byte)~maskBytes[i]);
-            }
-            return new IPAddress(broadcastIPBytes);
-        }
-
         static Socket getSocket() //create and bind socket
         {
             var s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram,
@@ -65,7 +51,17 @@ namespace zgw_search
             }
             return s;
         }
-
+        static IPAddress GetBroadCastIP(IPAddress host, IPAddress mask)
+        {
+            byte[] broadcastIPBytes = new byte[4];
+            byte[] hostBytes = host.GetAddressBytes();
+            byte[] maskBytes = mask.GetAddressBytes();
+            for (int i = 0; i < 4; i++)
+            {
+                broadcastIPBytes[i] = (byte)(hostBytes[i] | (byte)~maskBytes[i]);
+            }
+            return new IPAddress(broadcastIPBytes);
+        }
         static void pingZGW(Socket sock)
         {
             var nics = NetworkInterface.GetAllNetworkInterfaces();
