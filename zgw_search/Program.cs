@@ -85,8 +85,8 @@ namespace zgw_search
         [STAThread]
          static void Main()
         {
-            Trace.Listeners.Add(new ConsoleTraceListener());
-            //Trace.Listeners.Add(new TextWriterTraceListener(new System.IO.StreamWriter(@".\zgw_search.log", false)));
+            //Trace.Listeners.Add(new ConsoleTraceListener());
+            Trace.Listeners.Add(new TextWriterTraceListener(new System.IO.StreamWriter(@".\zgw_search.log", false)));
             
             var sock = getSocket();
             pingZGW(sock);
@@ -94,19 +94,19 @@ namespace zgw_search
             byte[] data = new byte[256];
             var sender = new IPEndPoint(IPAddress.Any, UDP_TST_PORT);
             var ipRemote = (EndPoint)(sender);
-            Console.WriteLine("Waiting to receive datagrams from client...");
+            Console.WriteLine("Waiting to receive response from ZGW...");
             int len = sock.ReceiveFrom(data, data.Length, SocketFlags.None, ref ipRemote);
-            string ZGW_reply = string.Join(string.Empty, Encoding.ASCII.GetString(data, 0, len).Skip(6));
-            Trace.TraceInformation("Response is:{0}", ZGW_reply);
+            var ZGW_reply = string.Join(string.Empty, Encoding.ASCII.GetString(data, 0, len).Skip(6));
+            Trace.TraceInformation("Response is:{0}", Encoding.ASCII.GetString(data, 0, len));
 
-            string pattern = @"DIAGADR(.*)BMWMAC(.*)BMWVIN(.*)";
+            var pattern = @"DIAGADR(.*)BMWMAC(.*)BMWVIN(.*)";
             foreach (Match match in Regex.Matches(ZGW_reply, pattern, RegexOptions.IgnoreCase))
             {
-                string diagAddr = match.Groups[1].Value;
-                string ZgwIP = ((IPEndPoint)(ipRemote)).Address.ToString();
-                string ZgwMAC = match.Groups[2].Value;
-                string ZgwVIN = match.Groups[3].Value;             
-                Trace.TraceInformation("\nDiagAddr: {0}\nZgw VIN: {1}\nZgwMAC: {2}\nZgwVIN: {3}", diagAddr, ZgwIP, ZgwMAC, ZgwVIN);
+                var diagAddr = match.Groups[1].Value;
+                var ZgwIP = ((IPEndPoint)(ipRemote)).Address.ToString();
+                var ZgwMAC = match.Groups[2].Value;
+                var ZgwVIN = match.Groups[3].Value;             
+                Console.WriteLine ("DiagAddr: {0}\nZgw VIN: {1}\nZgwMAC: {2}\nZgwVIN: {3}", diagAddr, ZgwIP, ZgwMAC, ZgwVIN);
             }
             sock.Close();
             Trace.Flush();
