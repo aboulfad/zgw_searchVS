@@ -34,7 +34,7 @@ namespace zgw_search
     public class Program
     {
         private const int UDP_DIAG_PORT = 6811;
-        private const int UDP_TST_PORT = 54321;
+        private const int UDP_TST_PORT = 0;
 
         static byte[] helloZGW = new byte[] { 0,0,0,0,0,0x11 };
 
