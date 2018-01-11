@@ -109,7 +109,8 @@ namespace zgw_search
                 var diagAddr = match.Groups[1].Value;
                 var ZgwIP = ((IPEndPoint)(ipRemote)).Address.ToString();
                 var ZgwMAC = match.Groups[2].Value;
-                var ZgwVIN = match.Groups[3].Value;             
+                var ZgwVIN = match.Groups[3].Value;
+                Environment.SetEnvironmentVariable("ZgwIpAddr", ZgwIP, EnvironmentVariableTarget.Machine);
                 Console.WriteLine ("DiagAddr: {0}\nZgw VIN: {1}\nZgwMAC: {2}\nZgwVIN: {3}", diagAddr, ZgwIP, ZgwMAC, ZgwVIN);
             }
             sock.Close();
