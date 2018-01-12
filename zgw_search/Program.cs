@@ -74,7 +74,7 @@ namespace zgw_search
                 var ipProps = netif.GetIPProperties();
                 foreach (var ipAddr in ipProps.UnicastAddresses)
                 {
-                    if (!IPAddress.IsLoopback(ipAddr.Address) && ipAddr.Address.AddressFamily == AddressFamily.InterNetwork)
+                    if (!IPAddress.IsLoopback(ipAddr.Address) && (IPAddress.Equals(ipAddr.Address,"30.85.1.115")) && (ipAddr.Address.AddressFamily == AddressFamily.InterNetwork))
                     {
                         var broadcast =  GetBroadCastIP( ipAddr.Address,  ipAddr.IPv4Mask);
                         Trace.TraceInformation(ipAddr.IPv4Mask == null ? "No subnet defined" : "Network Interface" + netif.Description + "\nipAddr: " + ipAddr.Address + "\nNetmask: " + ipAddr.IPv4Mask.ToString() + "\nBroadcast: " + broadcast);
@@ -89,31 +89,38 @@ namespace zgw_search
         [STAThread]
          static void Main()
         {
-            //Trace.Listeners.Add(new ConsoleTraceListener());
+            Trace.Listeners.Add(new ConsoleTraceListener());
             Trace.Listeners.Add(new TextWriterTraceListener(new System.IO.StreamWriter(@".\zgw_search.log", false)));
-            
-            var sock = getSocket();
-            pingZGW(sock);
 
-            byte[] data = new byte[256];
-            var sender = new IPEndPoint(IPAddress.Any, UDP_TST_PORT);
-            var ipRemote = (EndPoint)(sender);
-            Console.WriteLine("Waiting to receive response from ZGW...");
-            int len = sock.ReceiveFrom(data, data.Length, SocketFlags.None, ref ipRemote);
-            var ZGW_reply = string.Join(string.Empty, Encoding.ASCII.GetString(data, 0, len).Skip(6));
-            Trace.TraceInformation("Response is:{0}", Encoding.ASCII.GetString(data, 0, len));
-
-            var pattern = @"DIAGADR(.*)BMWMAC(.*)BMWVIN(.*)";
-            foreach (Match match in Regex.Matches(ZGW_reply, pattern, RegexOptions.IgnoreCase))
+            try
             {
-                var diagAddr = match.Groups[1].Value;
-                var ZgwIP = ((IPEndPoint)(ipRemote)).Address.ToString();
-                var ZgwMAC = match.Groups[2].Value;
-                var ZgwVIN = match.Groups[3].Value;             
-                Console.WriteLine ("DiagAddr: {0}\nZgw VIN: {1}\nZgwMAC: {2}\nZgwVIN: {3}", diagAddr, ZgwIP, ZgwMAC, ZgwVIN);
+                var sock = getSocket();
+                pingZGW(sock);
+
+                byte[] data = new byte[256];
+                var sender = new IPEndPoint(IPAddress.Any, UDP_TST_PORT);
+                var ipRemote = (EndPoint)(sender);
+                Console.WriteLine("Waiting to receive response from ZGW...");
+                int len = sock.ReceiveFrom(data, data.Length, SocketFlags.None, ref ipRemote);
+                var ZGW_reply = string.Join(string.Empty, Encoding.ASCII.GetString(data, 0, len).Skip(6));
+                Trace.TraceInformation("Response is:{0}", Encoding.ASCII.GetString(data, 0, len));
+
+                var pattern = @"DIAGADR(.*)BMWMAC(.*)BMWVIN(.*)";
+                foreach (Match match in Regex.Matches(ZGW_reply, pattern, RegexOptions.IgnoreCase))
+                {
+                    var diagAddr = match.Groups[1].Value;
+                    var ZgwIP = ((IPEndPoint)(ipRemote)).Address.ToString();
+                    var ZgwMAC = match.Groups[2].Value;
+                    var ZgwVIN = match.Groups[3].Value;
+                    Console.WriteLine("DiagAddr: {0}\nZgw VIN: {1}\nZgwMAC: {2}\nZgwVIN: {3}", diagAddr, ZgwIP, ZgwMAC, ZgwVIN);
+                }
+                sock.Close();
+                Trace.Flush();
             }
-            sock.Close();
-            Trace.Flush();
+            catch (System.Net.Sockets.SocketException sockEx)
+            {
+                int errorCode = sockEx.ErrorCode;
+            }
         }
     }
 }
