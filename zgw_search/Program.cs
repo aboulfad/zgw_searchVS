@@ -71,25 +71,30 @@ namespace zgw_search
             var nics = NetworkInterface.GetAllNetworkInterfaces();
             foreach (var netif in nics)
             {
-                var ipProps = netif.GetIPProperties();
-                foreach (var ipAddr in ipProps.UnicastAddresses)
+                bool status = NetworkInterface.GetIsNetworkAvailable(); ;
+                if (status)
                 {
-                    if (!IPAddress.IsLoopback(ipAddr.Address) && (IPAddress.Equals(ipAddr.Address,"30.85.1.115")) && (ipAddr.Address.AddressFamily == AddressFamily.InterNetwork))
+                    var ipProps = netif.GetIPProperties();
+                    foreach (var ipAddr in ipProps.UnicastAddresses)
                     {
-                        var broadcast =  GetBroadCastIP( ipAddr.Address,  ipAddr.IPv4Mask);
-                        Trace.TraceInformation(ipAddr.IPv4Mask == null ? "No subnet defined" : "Network Interface" + netif.Description + "\nipAddr: " + ipAddr.Address + "\nNetmask: " + ipAddr.IPv4Mask.ToString() + "\nBroadcast: " + broadcast);
-                        var ep = new IPEndPoint(broadcast, UDP_DIAG_PORT);
-                        sock.SendTo(helloZGW, ep);
-                        Trace.TraceInformation("{0} was sent to {1}", BitConverter.ToString(helloZGW), ep);
+                        if (!IPAddress.IsLoopback(ipAddr.Address) && (IPAddress.Equals(ipAddr.Address, IPAddress.Parse("30.85.1.118"))) && (ipAddr.Address.AddressFamily == AddressFamily.InterNetwork))
+                        {
+                            var broadcast = GetBroadCastIP(ipAddr.Address, ipAddr.IPv4Mask);
+                            Trace.TraceInformation(ipAddr.IPv4Mask == null ? "No subnet defined" : "\nNetwork Interface: " + netif.Description + "\nipAddr: " + ipAddr.Address + "\nNetmask: " + ipAddr.IPv4Mask.ToString() + "\nBroadcast: " + broadcast);
+                            var ep = new IPEndPoint(broadcast, UDP_DIAG_PORT);
+                            sock.SendTo(helloZGW, ep);
+                            Trace.TraceInformation("{0} was sent to {1}", BitConverter.ToString(helloZGW), ep);
+                        }
                     }
                 }
+ 
             }
         }
 
         [STAThread]
          static void Main()
         {
-            Trace.Listeners.Add(new ConsoleTraceListener());
+            //Trace.Listeners.Add(new ConsoleTraceListener());
             Trace.Listeners.Add(new TextWriterTraceListener(new System.IO.StreamWriter(@".\zgw_search.log", false)));
 
             try
@@ -112,7 +117,8 @@ namespace zgw_search
                     var ZgwIP = ((IPEndPoint)(ipRemote)).Address.ToString();
                     var ZgwMAC = match.Groups[2].Value;
                     var ZgwVIN = match.Groups[3].Value;
-                    Console.WriteLine("DiagAddr: {0}\nZgw VIN: {1}\nZgwMAC: {2}\nZgwVIN: {3}", diagAddr, ZgwIP, ZgwMAC, ZgwVIN);
+                    Trace.TraceInformation("DiagAddr: {0}\nZgw VIN: {1}\nZgwMAC: {2}\nZgwVIN: {3}", diagAddr, ZgwIP, ZgwMAC, ZgwVIN);
+
                 }
                 sock.Close();
                 Trace.Flush();
@@ -120,6 +126,7 @@ namespace zgw_search
             catch (System.Net.Sockets.SocketException sockEx)
             {
                 int errorCode = sockEx.ErrorCode;
+                Trace.TraceError("Socket Error: {0}", errorCode);
             }
         }
     }
